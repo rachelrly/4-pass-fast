@@ -1,4 +1,4 @@
-// TEST-NODEMAILER.js — API + Gmail test
+// test-apis.js — API + Gmail test
 require('dotenv').config()
 const nodemailer = require('nodemailer')
 
@@ -30,21 +30,39 @@ async function testEmail() {
     console.log(`${RED}❌ GMAIL_USER/GMAIL_PASS missing${RESET}`)
     return false
   }
-  const tx = nodemailer.createTransport({
+
+  // Get first email from EMAIL_LIST
+  let recipient = process.env.GMAIL_USER // default fallback
+  if (process.env.EMAIL_LIST) {
+    const emails = process.env.EMAIL_LIST.split(/[,;]/)
+      .map((e) => e.trim())
+      .filter((e) => e && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e))
+
+    if (emails.length > 0) {
+      recipient = emails[0] // Use only the first email
+      console.log(`Using first email from list: ${recipient}`)
+    }
+  }
+
+  const tx = nodemailer.createTransporter({
     service: 'gmail',
     auth: { user: process.env.GMAIL_USER, pass: process.env.GMAIL_PASS }
   })
+
   try {
     const info = await tx.sendMail({
       from: process.env.GMAIL_USER,
-      to: process.env.EMAIL_LIST || process.env.GMAIL_USER,
+      to: recipient, // Now using single email address
       subject: 'Test Nodemailer Email',
       html: `<p>✅ Test at ${new Date().toISOString()}</p>`
     })
-    console.log(`${GREEN}✅ Email sent — id: ${info.messageId}${RESET}`)
+    console.log(
+      `${GREEN}✅ Email sent to ${recipient} — id: ${info.messageId}${RESET}`
+    )
     return true
   } catch (e) {
     console.log(`${RED}❌ Email failed: ${e.message}${RESET}`)
+    console.log(`Attempted to send to: ${recipient}`)
     return false
   }
 }
