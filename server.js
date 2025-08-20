@@ -42,7 +42,7 @@ const MAROON_BELLS_PERMIT = {
   name: 'Maroon Bells-Snowmass Wilderness',
   id: '4675333'
 }
-const TARGET_DATE = '2025-09-20'
+const TARGET_DATE = '2025-09-21'
 
 // -----------------------------
 // Availability check (fetch)
