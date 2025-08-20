@@ -42,7 +42,7 @@ const MAROON_BELLS_PERMIT = {
   name: 'Maroon Bells-Snowmass Wilderness',
   id: '4675333'
 }
-const TARGET_DATE = '2025-09-20'
+const TARGET_DATE = '2025-09-21'
 
 // -----------------------------
 // Availability check (fetch)
@@ -182,6 +182,25 @@ app.post('/check-now', async (req, res) => {
   const available = await checkFourPassAvailability()
   res.json({ available, timestamp: new Date().toISOString() })
 })
+
+// -----------------------------
+// 🆕 RENDER KEEP-ALIVE FUNCTIONALITY
+// -----------------------------
+// Self-ping to prevent Render free tier from sleeping
+if (process.env.RENDER) {
+  // Ping itself every 14 minutes to stay awake
+  cron.schedule('*/14 * * * *', async () => {
+    try {
+      const url =
+        process.env.RENDER_EXTERNAL_URL || `https://your-app-name.onrender.com`
+      await fetch(`${url}/status`)
+      console.log('🏓 Self-ping to stay awake on Render')
+    } catch (e) {
+      console.log('Self-ping failed:', e.message)
+    }
+  })
+  console.log('📍 Render environment detected - self-ping enabled')
+}
 
 // -----------------------------
 // Boot
