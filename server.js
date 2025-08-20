@@ -184,6 +184,25 @@ app.post('/check-now', async (req, res) => {
 })
 
 // -----------------------------
+// 🆕 RENDER KEEP-ALIVE FUNCTIONALITY
+// -----------------------------
+// Self-ping to prevent Render free tier from sleeping
+if (process.env.RENDER) {
+  // Ping itself every 14 minutes to stay awake
+  cron.schedule('*/14 * * * *', async () => {
+    try {
+      const url =
+        process.env.RENDER_EXTERNAL_URL || `https://your-app-name.onrender.com`
+      await fetch(`${url}/status`)
+      console.log('🏓 Self-ping to stay awake on Render')
+    } catch (e) {
+      console.log('Self-ping failed:', e.message)
+    }
+  })
+  console.log('📍 Render environment detected - self-ping enabled')
+}
+
+// -----------------------------
 // Boot
 // -----------------------------
 async function initializeServer() {
